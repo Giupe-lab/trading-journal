@@ -1,0 +1,1061 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trade Calendar | P&L Tracker</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --background: #0b0c0e;
+    --panel: #17191d;
+    --panel-light: #22242a;
+    --border: #292c32;
+    --text: #e5e7eb;
+    --muted: #858b96;
+    --green: #00c985;
+    --green-bg: #064d3b;
+    --red: #e83e48;
+    --red-bg: #4a171d;
+    --gray-day: #30343c;
+}
+
+body {
+    background:
+        radial-gradient(circle at 90% 100%, #063b2c 0%, transparent 30%),
+        #0b0c0e;
+    color: var(--text);
+    font-family: Inter, Arial, sans-serif;
+    min-height: 100vh;
+    padding: 30px;
+}
+
+.container {
+    max-width: 1450px;
+    margin: auto;
+}
+
+/* HEADER */
+
+.header {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 17px;
+    padding: 23px 25px;
+    margin-bottom: 20px;
+}
+
+.header-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.logo {
+    color: #8b5cf6;
+    font-size: 23px;
+}
+
+.header-title span:last-child {
+    background: linear-gradient(90deg, #18d5a0, #72c9ed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.header p {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 9px;
+}
+
+/* MONTH NAVIGATION */
+
+.month-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 18px 0;
+}
+
+.month-navigation h2 {
+    font-size: 21px;
+    font-weight: 600;
+}
+
+.nav-buttons {
+    display: flex;
+    gap: 7px;
+}
+
+button {
+    background: var(--panel);
+    color: var(--text);
+    border: 1px solid var(--border);
+    padding: 9px 13px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: .2s;
+}
+
+button:hover {
+    background: #292c32;
+}
+
+.nav-buttons button {
+    font-size: 13px;
+}
+
+/* SUMMARY BAR */
+
+.summary {
+    display: grid;
+    grid-template-columns: 220px 1fr 110px;
+    align-items: center;
+    background: #25272d;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 17px;
+    margin-bottom: 17px;
+}
+
+.account-select {
+    width: 100%;
+    background: #1b1d22;
+    color: white;
+    border: 1px solid #383c44;
+    border-radius: 6px;
+    padding: 9px;
+    outline: none;
+}
+
+.monthly-result {
+    text-align: center;
+}
+
+.monthly-result span {
+    color: #a2a6ad;
+    font-size: 13px;
+}
+
+.monthly-result strong {
+    font-size: 21px;
+    margin-left: 5px;
+}
+
+.positive {
+    color: var(--green) !important;
+}
+
+.negative {
+    color: var(--red) !important;
+}
+
+.neutral {
+    color: #9ca3af !important;
+}
+
+.summary-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 7px;
+}
+
+.summary-actions button {
+    font-size: 12px;
+    padding: 8px 10px;
+}
+
+.add-account {
+    color: #a78bfa;
+}
+
+/* CALENDAR */
+
+.calendar-wrapper {
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.calendar {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(105px, 1fr)) minmax(135px, 1.15fr);
+    gap: 5px;
+    min-width: 920px;
+}
+
+.weekday {
+    background: #37393e;
+    text-align: center;
+    padding: 12px 5px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #d8d9dd;
+}
+
+.day {
+    min-height: 105px;
+    border-radius: 6px;
+    border: 1px solid #202329;
+    background: var(--gray-day);
+    padding: 9px;
+    position: relative;
+    cursor: pointer;
+    transition: transform .12s, border .12s;
+}
+
+.day:hover {
+    transform: translateY(-2px);
+    border-color: #626771;
+}
+
+.day.empty {
+    background: #181a1e;
+    cursor: default;
+}
+
+.day.empty:hover {
+    transform: none;
+}
+
+.day.profit {
+    background: var(--green-bg);
+    border-color: #087b60;
+}
+
+.day.loss {
+    background: var(--red-bg);
+    border-color: #7c2b34;
+}
+
+.day.break-even {
+    background: #30343c;
+}
+
+.day-number {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.day-result {
+    margin-top: 12px;
+    width: 100%;
+    text-align: center;
+    border-radius: 5px;
+    padding: 7px 3px;
+    font-size: 12px;
+    font-weight: 700;
+    background: #414650;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.profit .day-result {
+    background: #00ae79;
+    color: white;
+}
+
+.loss .day-result {
+    background: #c82e38;
+    color: white;
+}
+
+.break-even .day-result {
+    background: #233d5e;
+    color: #b4d4ff;
+}
+
+.trade-count {
+    text-align: center;
+    font-size: 9px;
+    color: #9da5ad;
+    margin-top: 5px;
+}
+
+.week-total {
+    min-height: 105px;
+    border: 1px solid var(--border);
+    background: #25272c;
+    border-radius: 9px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.week-total span {
+    font-size: 10px;
+    color: #a0a4ab;
+    margin-bottom: 8px;
+}
+
+.week-total strong {
+    font-size: 19px;
+    font-weight: 700;
+    text-align: center;
+    overflow-wrap: anywhere;
+}
+
+/* MODAL */
+
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 999;
+}
+
+.modal {
+    width: 100%;
+    max-width: 400px;
+    background: #1b1d22;
+    border: 1px solid #353941;
+    border-radius: 14px;
+    padding: 22px;
+    box-shadow: 0 20px 60px #0008;
+}
+
+.modal h3 {
+    font-size: 19px;
+    margin-bottom: 7px;
+}
+
+.modal-date {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 12px;
+    color: #a9afb8;
+    margin-bottom: 7px;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #373b43;
+    border-radius: 7px;
+    background: #111317;
+    color: white;
+    outline: none;
+    font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: #7560e8;
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 70px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+.modal-buttons button {
+    flex: 1;
+    padding: 11px;
+}
+
+.save-button {
+    background: #6353d9;
+    border-color: #6353d9;
+}
+
+.delete-button {
+    color: #ff6b75;
+}
+
+@media (max-width: 700px) {
+    body {
+        padding: 12px;
+    }
+
+    .header {
+        padding: 18px;
+    }
+
+    .header-title {
+        font-size: 19px;
+    }
+
+    .month-navigation h2 {
+        font-size: 18px;
+    }
+
+    .summary {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        padding: 12px;
+    }
+
+    .monthly-result {
+        text-align: left;
+    }
+
+    .summary-actions {
+        justify-content: flex-start;
+    }
+
+    .calendar {
+        min-width: 820px;
+        grid-template-columns: repeat(7, minmax(85px, 1fr)) 120px;
+    }
+
+    .day {
+        min-height: 95px;
+    }
+
+    .week-total {
+        min-height: 95px;
+    }
+
+    .week-total strong {
+        font-size: 15px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-title">
+            <span class="logo">▣</span>
+            <span>Trade Calendar</span>
+        </div>
+        <p>View your daily performance, trading habits, and detailed notes at a glance.</p>
+    </div>
+
+    <!-- ACCESSO E SINCRONIZZAZIONE -->
+    <div class="auth-panel" id="authPanel">
+        <div class="auth-field"><label for="emailInput">Email</label><input type="email" id="emailInput" placeholder="La tua email" autocomplete="email"></div>
+        <div class="auth-field"><label for="passwordInput">Password</label><input type="password" id="passwordInput" placeholder="Almeno 6 caratteri" autocomplete="current-password"></div>
+        <button onclick="signIn()">Accedi</button>
+        <button onclick="signUp()">Crea account</button>
+        <div class="auth-status" id="authStatus">Accedi o crea un account per sincronizzare i dati tra PC e iPhone.</div>
+    </div>
+
+    <!-- NAVIGAZIONE MESE -->
+    <div class="month-navigation">
+        <h2 id="monthTitle"></h2>
+
+        <div class="nav-buttons">
+            <button onclick="changeMonth(-1)">‹</button>
+            <button onclick="goToday()">Today</button>
+            <button onclick="changeMonth(1)">›</button>
+        </div>
+    </div>
+
+    <!-- RIEPILOGO -->
+    <div class="summary">
+
+        <div>
+            <select id="accountSelect" class="account-select"
+                    onchange="changeAccount()">
+            </select>
+        </div>
+
+        <div class="monthly-result">
+            <span>Monthly P/L:</span>
+            <strong id="monthlyPL">€0.00</strong>
+        </div>
+
+        <div class="summary-actions">
+            <button class="add-account" onclick="addAccount()">＋ Account</button>
+            <button onclick="exportData()" title="Export CSV">⇩</button>
+        </div>
+
+    </div>
+
+    <!-- CALENDARIO -->
+    <div class="calendar-wrapper">
+        <div class="calendar" id="calendar"></div>
+    </div>
+
+</div>
+
+<!-- MODALE INSERIMENTO TRADE -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeOutside(event)">
+    <div class="modal">
+
+        <h3 id="modalTitle">Daily Result</h3>
+        <div class="modal-date" id="modalDate"></div>
+
+        <div class="form-group">
+            <label>Daily P/L (€)</label>
+            <input type="number" step="0.01" id="plInput"
+                   placeholder="Example: 250 or -120">
+        </div>
+
+        <div class="form-group">
+            <label>Number of trades</label>
+            <input type="number" min="0" step="1" id="tradesInput"
+                   placeholder="0">
+        </div>
+
+        <div class="form-group">
+            <label>Notes</label>
+            <textarea id="notesInput" placeholder="Notes about the day..."></textarea>
+        </div>
+
+        <div class="modal-buttons">
+            <button onclick="closeModal()">Cancel</button>
+            <button class="delete-button" onclick="deleteDay()">Delete</button>
+            <button class="save-button" onclick="saveDay()">Save</button>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ==========================================
+// CONFIGURAZIONE SUPABASE
+// ==========================================
+const SUPABASE_URL = "https://gquznadnquwbkmieaema.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_u6WNqQR_Uplb6PDh6anYTA_r_d9b_0A";
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+let currentUser = null;
+let cloudReady = false;
+
+// ==========================================
+// DATA
+// ==========================================
+
+const STORAGE_KEY = "tradeCalendarData_v1";
+
+let currentDate = new Date();
+currentDate.setDate(1);
+
+let selectedDate = null;
+let activeAccount = "All Accounts";
+
+let data = loadData();
+
+function loadData() {
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+            accounts: ["All Accounts", "Account 1"],
+            trades: {}
+        };
+    } catch {
+        return {
+            accounts: ["All Accounts", "Account 1"],
+            trades: {}
+        };
+    }
+}
+
+function saveDataStorage() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+// ==========================================
+// ACCOUNTS
+// ==========================================
+
+function populateAccounts() {
+    const select = document.getElementById("accountSelect");
+    select.innerHTML = "";
+
+    data.accounts.forEach(account => {
+        const option = document.createElement("option");
+        option.value = account;
+        option.textContent = account;
+        select.appendChild(option);
+    });
+
+    select.value = activeAccount;
+}
+
+function addAccount() {
+    const name = prompt("Enter account name:");
+
+    if (!name || !name.trim()) return;
+
+    const account = name.trim();
+
+    if (data.accounts.includes(account)) {
+        alert("Account already exists.");
+        return;
+    }
+
+    data.accounts.push(account);
+    activeAccount = account;
+
+    saveDataStorage();
+    populateAccounts();
+    renderCalendar();
+}
+
+function changeAccount() {
+    activeAccount = document.getElementById("accountSelect").value;
+    renderCalendar();
+}
+
+// ==========================================
+// MONTH
+// ==========================================
+
+function changeMonth(amount) {
+    currentDate.setMonth(currentDate.getMonth() + amount);
+    renderCalendar();
+}
+
+function goToday() {
+    currentDate = new Date();
+    currentDate.setDate(1);
+    renderCalendar();
+}
+
+function getMonthName(date) {
+    return date.toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric"
+    });
+}
+
+// ==========================================
+// TRADE DATA
+// ==========================================
+
+function dateKey(date) {
+    return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`;
+}
+
+function getTrade(date) {
+    const key = dateKey(date);
+
+    if (!data.trades[key]) return null;
+
+    if (activeAccount === "All Accounts") {
+        const entries = Object.values(data.trades[key]);
+        if (!entries.length) return null;
+
+        return entries.reduce((result, trade) => {
+            result.pl += Number(trade.pl || 0);
+            result.trades += Number(trade.trades || 0);
+            if (trade.notes) result.notes.push(trade.notes);
+            return result;
+        }, { pl: 0, trades: 0, notes: [] });
+    }
+
+    return data.trades[key][activeAccount] || null;
+}
+
+function setTrade(date, trade) {
+    const key = dateKey(date);
+
+    if (!data.trades[key]) {
+        data.trades[key] = {};
+    }
+
+    if (
+        trade.pl === 0 &&
+        trade.trades === 0 &&
+        !trade.notes.trim()
+    ) {
+        delete data.trades[key][activeAccount];
+
+        if (!Object.keys(data.trades[key]).length) {
+            delete data.trades[key];
+        }
+    } else {
+        data.trades[key][activeAccount] = trade;
+    }
+
+    saveDataStorage();
+}
+
+// ==========================================
+// CALENDAR RENDER
+// ==========================================
+
+function renderCalendar() {
+    document.getElementById("monthTitle").textContent =
+        getMonthName(currentDate);
+
+    const calendar = document.getElementById("calendar");
+    calendar.innerHTML = "";
+
+    document.getElementById("monthlyPL").textContent = "€0.00";
+
+    const headers = [
+        "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat",
+        "Weekly Total"
+    ];
+
+    headers.forEach(header => {
+        const el = document.createElement("div");
+        el.className = "weekday";
+        el.textContent = header;
+        calendar.appendChild(el);
+    });
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    const totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+
+    let monthlyPL = 0;
+
+    for (let week = 0; week < totalCells / 7; week++) {
+        let weeklyPL = 0;
+
+        for (let dayOfWeek = 0; dayOfWeek < 7; dayOfWeek++) {
+            const cellIndex = week * 7 + dayOfWeek;
+            const dayNumber = cellIndex - firstDay + 1;
+
+            const cell = document.createElement("div");
+
+            if (dayNumber < 1 || dayNumber > daysInMonth) {
+                cell.className = "day empty";
+                calendar.appendChild(cell);
+                continue;
+            }
+
+            const date = new Date(year, month, dayNumber);
+            const trade = getTrade(date);
+
+            cell.className = "day";
+
+            if (trade) {
+                if (trade.pl > 0) cell.classList.add("profit");
+                else if (trade.pl < 0) cell.classList.add("loss");
+                else if (trade.trades > 0) cell.classList.add("break-even");
+            }
+
+            const number = document.createElement("div");
+            number.className = "day-number";
+            number.textContent = dayNumber;
+            cell.appendChild(number);
+
+            if (trade && (trade.pl !== 0 || trade.trades > 0)) {
+                const result = document.createElement("div");
+                result.className = "day-result";
+                result.textContent = formatMoney(trade.pl);
+                cell.appendChild(result);
+
+                const count = document.createElement("div");
+                count.className = "trade-count";
+                count.textContent = "Trades: " + trade.trades;
+                cell.appendChild(count);
+
+                weeklyPL += trade.pl;
+                monthlyPL += trade.pl;
+            }
+
+            cell.onclick = () => openModal(date);
+            calendar.appendChild(cell);
+        }
+
+        // WEEKLY TOTAL
+        const total = document.createElement("div");
+        total.className = "week-total";
+
+        const label = document.createElement("span");
+        label.textContent = "Week Total";
+
+        const amount = document.createElement("strong");
+        amount.textContent = formatMoney(weeklyPL);
+
+        amount.classList.add(
+            weeklyPL > 0 ? "positive" :
+            weeklyPL < 0 ? "negative" : "neutral"
+        );
+
+        total.appendChild(label);
+        total.appendChild(amount);
+        calendar.appendChild(total);
+    }
+
+    const monthly = document.getElementById("monthlyPL");
+    monthly.textContent = formatMoney(monthlyPL);
+
+    monthly.className = "";
+    monthly.classList.add(
+        monthlyPL > 0 ? "positive" :
+        monthlyPL < 0 ? "negative" : "neutral"
+    );
+}
+
+// ==========================================
+// FORMAT
+// ==========================================
+
+function formatMoney(value) {
+    const number = Number(value) || 0;
+
+    const formatted = Math.abs(number).toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+
+    if (number > 0) return "+€" + formatted;
+    if (number < 0) return "-€" + formatted;
+
+    return "€0.00";
+}
+
+// ==========================================
+// MODAL
+// ==========================================
+
+function openModal(date) {
+    selectedDate = date;
+
+    const trade = getTrade(date);
+
+    document.getElementById("modalTitle").textContent = "Daily Result";
+    document.getElementById("modalDate").textContent =
+        date.toLocaleDateString("en-US", {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+            year: "numeric"
+        });
+
+    document.getElementById("plInput").value =
+        trade ? trade.pl : "";
+
+    document.getElementById("tradesInput").value =
+        trade ? trade.trades : "";
+
+    document.getElementById("notesInput").value =
+        trade && trade.notes
+        ? Array.isArray(trade.notes) ? trade.notes.join("\n") : trade.notes
+        : "";
+
+    document.getElementById("modalOverlay").style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById("modalOverlay").style.display = "none";
+}
+
+function closeOutside(event) {
+    if (event.target.id === "modalOverlay") closeModal();
+}
+
+function saveDay() {
+    const pl = parseFloat(document.getElementById("plInput").value) || 0;
+    const trades = parseInt(document.getElementById("tradesInput").value) || 0;
+    const notes = document.getElementById("notesInput").value;
+
+    setTrade(selectedDate, { pl, trades, notes });
+
+    closeModal();
+    renderCalendar();
+}
+
+function deleteDay() {
+    if (!selectedDate) return;
+
+    setTrade(selectedDate, { pl: 0, trades: 0, notes: "" });
+
+    closeModal();
+    renderCalendar();
+}
+
+// ==========================================
+// CSV EXPORT
+// ==========================================
+
+function exportData() {
+    let csv = "Date,Account,Profit/Loss,Trades,Notes\n";
+
+    Object.keys(data.trades).sort().forEach(date => {
+        Object.entries(data.trades[date]).forEach(([account, trade]) => {
+            csv += [
+                date,
+                account,
+                trade.pl,
+                trade.trades,
+                '"' + (trade.notes || "").replaceAll('"', '""') + '"'
+            ].join(",") + "\n";
+        });
+    });
+
+    const blob = new Blob([csv], {
+        type: "text/csv;charset=utf-8;"
+    });
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "trading-journal.csv";
+    link.click();
+
+    URL.revokeObjectURL(link.href);
+}
+
+
+// ==========================================
+// ACCESSO E SINCRONIZZAZIONE CLOUD
+// ==========================================
+function authMessage(message, type = "") {
+    const el = document.getElementById("authStatus");
+    if (el) { el.textContent = message; el.className = "auth-status " + type; }
+}
+function showSignedIn() {
+    const panel = document.getElementById("authPanel");
+    panel.innerHTML = `<span class="user-email">Connesso: ${String(currentUser.email || "").replace(/[&<>"]/g, "")}</span>
+      <button onclick="syncNow()">Sincronizza</button><button onclick="signOut()">Esci</button>
+      <div class="auth-status success" id="authStatus">Sincronizzazione cloud attiva.</div>`;
+}
+async function signUp() {
+    const email = document.getElementById("emailInput").value.trim();
+    const password = document.getElementById("passwordInput").value;
+    if (!email || password.length < 6) return authMessage("Inserisci un'email valida e una password di almeno 6 caratteri.", "error");
+    authMessage("Creazione account...");
+    const { data: result, error } = await supabaseClient.auth.signUp({ email, password });
+    if (error) return authMessage(error.message, "error");
+    if (result.session) { currentUser = result.user; await loadCloudData(); }
+    else authMessage("Account creato. Controlla la posta, conferma l'email e poi accedi.", "success");
+}
+async function signIn() {
+    const email = document.getElementById("emailInput").value.trim();
+    const password = document.getElementById("passwordInput").value;
+    if (!email || !password) return authMessage("Inserisci email e password.", "error");
+    authMessage("Accesso in corso...");
+    const { data: result, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) return authMessage(error.message, "error");
+    currentUser = result.user;
+    await loadCloudData();
+}
+async function signOut() {
+    await supabaseClient.auth.signOut();
+    currentUser = null; cloudReady = false;
+    authMessage("Disconnesso. Accedi per caricare i dati cloud.");
+    location.reload();
+}
+async function loadCloudData() {
+    authMessage("Caricamento dei dati cloud...");
+    const { data: rows, error } = await supabaseClient.from("trading_days")
+        .select("trade_date,account_name,pnl,trade_count,notes").eq("user_id", currentUser.id);
+    if (error) return authMessage("Errore: " + error.message, "error");
+
+    const cloud = {};
+    const accounts = new Set(["All Accounts", "Account 1"]);
+    (rows || []).forEach(row => {
+        if (!cloud[row.trade_date]) cloud[row.trade_date] = {};
+        cloud[row.trade_date][row.account_name] = {
+            pl: Number(row.pnl) || 0, trades: Number(row.trade_count) || 0, notes: row.notes || ""
+        };
+        accounts.add(row.account_name);
+    });
+
+    // Recupera eventuali dati locali non ancora presenti nel cloud, senza sovrascrivere il cloud.
+    const missing = [];
+    Object.entries(data.trades || {}).forEach(([date, byAccount]) => {
+        Object.entries(byAccount || {}).forEach(([account, trade]) => {
+            if (!cloud[date] || !cloud[date][account]) {
+                if (!cloud[date]) cloud[date] = {};
+                cloud[date][account] = trade;
+                accounts.add(account);
+                missing.push({
+                    user_id: currentUser.id, trade_date: date, account_name: account,
+                    pnl: Number(trade.pl) || 0, trade_count: Number(trade.trades) || 0,
+                    notes: Array.isArray(trade.notes) ? trade.notes.join("\n") : (trade.notes || "")
+                });
+            }
+        });
+    });
+    if (missing.length) {
+        const { error: upsertError } = await supabaseClient.from("trading_days")
+            .upsert(missing, { onConflict: "user_id,trade_date,account_name" });
+        if (upsertError) return authMessage("Dati caricati ma non trasferiti: " + upsertError.message, "error");
+    }
+    data.trades = cloud;
+    data.accounts = Array.from(accounts);
+    if (!data.accounts.includes(activeAccount)) activeAccount = "All Accounts";
+    saveDataStorage();
+    cloudReady = true;
+    showSignedIn();
+    populateAccounts();
+    renderCalendar();
+}
+async function syncNow() { if (currentUser) await loadCloudData(); }
+
+// Sovrascrive il salvataggio locale aggiungendo il salvataggio su Supabase.
+function setTrade(date, trade) {
+    const key = dateKey(date);
+    if (!data.trades[key]) data.trades[key] = {};
+    if (trade.pl === 0 && trade.trades === 0 && !String(trade.notes || "").trim()) {
+        delete data.trades[key][activeAccount];
+        if (!Object.keys(data.trades[key]).length) delete data.trades[key];
+    } else {
+        data.trades[key][activeAccount] = trade;
+    }
+    saveDataStorage();
+    if (currentUser && cloudReady) saveTradeCloud(date, trade);
+}
+async function saveTradeCloud(date, trade) {
+    const record = {
+        user_id: currentUser.id, trade_date: dateKey(date),
+        account_name: activeAccount, pnl: Number(trade.pl) || 0,
+        trade_count: Number(trade.trades) || 0, notes: trade.notes || ""
+    };
+    let result;
+    if (record.pnl === 0 && record.trade_count === 0 && !String(record.notes).trim()) {
+        result = await supabaseClient.from("trading_days").delete()
+            .eq("user_id", record.user_id).eq("trade_date", record.trade_date)
+            .eq("account_name", record.account_name);
+    } else {
+        result = await supabaseClient.from("trading_days").upsert(record, {
+            onConflict: "user_id,trade_date,account_name"
+        });
+    }
+    if (result.error) authMessage("Errore salvataggio cloud: " + result.error.message, "error");
+}
+
+// ==========================================
+// START
+// ==========================================
+populateAccounts();
+renderCalendar();
+(async function restoreSession() {
+    const { data: result } = await supabaseClient.auth.getSession();
+    if (result && result.session) {
+        currentUser = result.session.user;
+        await loadCloudData();
+    }
+})();
+
+</script>
+
+</body>
+</html>
